@@ -12,7 +12,6 @@ variable "http_ip" {}
 variable "instance_type" {}
 variable "image_name" {}
 variable "public_key_location" {}
-variable "entry_file" {}
 
 // Create a custom VPC using credentials from aws cli configure
 // Credentials are locally available under ~/.aws/configure
@@ -62,7 +61,7 @@ resource "aws_route_table" "utkal-rt" {
 }
 
 output "rt_id" {
-  value = aws_route_table.utkal-rt.id
+  value = aws_route_table.utkal-rt
 }
 
 // Internet Gateway is required for Route Table to access to internet
@@ -74,7 +73,7 @@ resource "aws_internet_gateway" "utkal-igw" {
 }
 
 output "igw_id" {
-  value = aws_internet_gateway.utkal-igw.id
+  value = aws_internet_gateway.utkal-igw
 }
 
 // Associate custom route table with the subnet created above
@@ -139,7 +138,7 @@ data "aws_ami" "utkal-ami" {
 }
 
 output "ami_id" {
-  value = data.aws_ami.utkal-ami.id
+  value = data.aws_ami.utkal-ami
 }
 
 
@@ -174,15 +173,21 @@ resource "aws_instance" "utkal-EC2" {
   key_name = aws_key_pair.utkal-key-pair.key_name
 
   // Start up script in the instance
-  user_data = file(var.entry_file)
+  user_data = <<EOF
+                #!/bin/bash
+                sudo yum update -y && sudo yum install -y docker
+                sudo service docker start
+                sudo usermod -aG docker ec2-user
+                docker run -p 8080:80 nginx
+              EOF
 
   tags = {
     Name = "${var.env_prefix}-server-instance"
   }
 }
 
-output "ec2_public_ip" {
-  value = aws_instance.utkal-EC2.public_ip
+output "ec2_id" {
+  value = aws_instance.utkal-EC2
 }
 
 
