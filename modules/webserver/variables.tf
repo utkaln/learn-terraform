@@ -1,0 +1,9 @@
+variable "ssh_ip" {}
+variable "vpc_id" {}
+variable "http_ip" {}
+variable "env_prefix" {}
+variable "image_name" {}
+variable "public_key_location" {}
+variable "instance_type" {}
+variable "def_az" {}
+variable "subnet_from_module_id" {}
