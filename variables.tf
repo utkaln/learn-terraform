@@ -8,4 +8,3 @@ variable "http_ip" {}
 variable "instance_type" {}
 variable "image_name" {}
 variable "public_key_location" {}
-variable "entry_file" {}
