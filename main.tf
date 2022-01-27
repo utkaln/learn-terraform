@@ -39,6 +39,7 @@ module "utkal_ec2_instance" {
   instance_type         = var.instance_type
   def_az                = var.def_az
   subnet_from_module_id = module.utkal_subnet_module.subnet_from_module.id
+  private_ssh_key       = var.private_ssh_key
 }
 
 

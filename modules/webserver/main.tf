@@ -23,6 +23,15 @@ resource "aws_security_group" "utkal_sg" {
     cidr_blocks = var.http_ip
   }
 
+  // Inbound rule for node app on port 3000 (installed via ansible)
+  ingress {
+    description = "HTTP from everywhere"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = var.http_ip
+  }
+
   // Outbound rule to not limit any port or any protocol
   egress {
     from_port   = 0
@@ -79,12 +88,29 @@ resource "aws_instance" "utkal-EC2" {
   // Associate the key pair to be able to allow access to the instance via SSH
   key_name = aws_key_pair.utkal-key-pair.key_name
 
-  // Start up script in the instance
-  // user_data = file("./bootstrap.sh")
-
   tags = {
     Name = "${var.env_prefix}-server-instance"
   }
+
 }
 
+// create a null resource that does not create new resource, rather runs ansible script in the EC2 created above
+resource "null_resource" "configure-server-ansible" {
+  // run this resource only the following trigger is changed
+  triggers = {
+    trigger = aws_instance.utkal-EC2.public_ip
+  }
+
+  // following segment is to run a command
+  provisioner "local-exec" {
+
+    // change to directory with ansible playbook so the entire eco system can be referred
+    working_dir = "/Users/utkalnayak/code/ansible/learn-ansible"
+    // following command invoked to run the ansible playbook
+    // pass the IP address dynamically by sending argument through inventory (default value in the hosts file)
+    // specify IP addresses with comma separation (comma needed even if there is one IP)
+    command = "ansible-playbook --inventory ${aws_instance.utkal-EC2.public_ip}, --private-key ${var.private_ssh_key} --user ec2-user docker-deploy-ec2.yaml"
+
+  }
+}
 

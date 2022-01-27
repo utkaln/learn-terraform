@@ -7,3 +7,4 @@ variable "public_key_location" {}
 variable "instance_type" {}
 variable "def_az" {}
 variable "subnet_from_module_id" {}
+variable "private_ssh_key" {}
