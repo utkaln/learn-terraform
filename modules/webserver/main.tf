@@ -80,7 +80,7 @@ resource "aws_instance" "utkal-EC2" {
   key_name = aws_key_pair.utkal-key-pair.key_name
 
   // Start up script in the instance
-  user_data = file("./bootstrap.sh")
+  //user_data = file("./bootstrap.sh")
 
   tags = {
     Name = "${var.env_prefix}-server-instance"
