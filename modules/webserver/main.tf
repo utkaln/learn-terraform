@@ -154,3 +154,33 @@ resource "aws_instance" "ansible-EC2-three" {
   }
 }
 
+resource "aws_instance" "ansible-EC2-exclude" {
+  // Use the ami id that matches the desired description
+  ami = data.aws_ami.utkal-ami.id
+
+  // drive instance type as a parameter for flexibility
+  instance_type = var.instance_type
+
+  // subnet id should match to the subnet created above in the custom vpc
+  subnet_id = var.subnet_from_module_id
+
+  // associated the configured SG above
+  vpc_security_group_ids = [aws_security_group.utkal_sg.id]
+
+  // associate AZ to be in the same AZ as that of the subnet above
+  availability_zone = var.def_az
+
+  // Allow external IP to access the instance
+  associate_public_ip_address = true
+
+  // Associate the key pair to be able to allow access to the instance via SSH
+  key_name = aws_key_pair.utkal-key-pair.key_name
+
+  // Start up script in the instance
+  //user_data = file("./bootstrap.sh")
+
+  tags = {
+    Name = "prod-server-instance-exclude"
+  }
+}
+

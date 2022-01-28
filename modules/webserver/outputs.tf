@@ -9,3 +9,7 @@ output "ec2_instance_two" {
 output "ec2_instance_three" {
   value = aws_instance.ansible-EC2-three
 }
+
+output "ec2_instance_exclude" {
+  value = aws_instance.ansible-EC2-exclude
+}

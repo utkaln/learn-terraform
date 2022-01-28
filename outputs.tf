@@ -11,3 +11,6 @@ output "ec2_ip_three" {
   value = module.utkal_ec2_instance.ec2_instance_three.public_ip
 }
 
+output "ec2_ip_exclude" {
+  value = module.utkal_ec2_instance.ec2_instance_exclude.public_ip
+}
