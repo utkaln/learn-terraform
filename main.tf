@@ -7,7 +7,8 @@ provider "aws" {
 // Credentials are locally available under ~/.aws/configure
 // Tag for Name: dev-vpc
 resource "aws_vpc" "utkal_vpc" {
-  cidr_block = var.vpc_cidr_block
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_hostnames = true
   tags = {
     Name = "${var.env_prefix}-vpc"
   }
