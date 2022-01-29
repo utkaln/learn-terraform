@@ -1,30 +1,34 @@
-provider "kubernetes" {
-  load_config_file       = "false"
-  host                   = module.mahanadi-eks-cluster.cluster_endpoint
-  token                  = data.aws_eks_cluster_auth.mahanadi-cluster.token
-  cluster_ca_certificate = base64decode(module.mahanadi-eks-cluster.certificate_authority_data)
-}
+module "eks" {
+  source          = "terraform-aws-modules/eks/aws"
+  version         = "18.2.3"
+  cluster_name    = "jan22-eks-cluster"
+  cluster_version = "1.21"
 
-data "aws_eks_cluster_auth" "mahanadi-cluster" {
-  name = "mahanadi-eks-cluster"
-}
+  // specify the private subnets as those will house the worker nodes
+  // do not specify public subnets as those are for loadbalancers
+  subnet_ids = module.eks-vpc.private_subnets
+  vpc_id     = module.eks-vpc.vpc_id
 
-module "mahanadi-eks-cluster" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "18.2.0"
-
-  cluster_name    = "mahanadi-eks-cluster"
-  cluster_version = "1.23"
-
-  subnet_ids = module.mahanadi-eks-vpc.private_subnets
-  vpc_id     = module.mahanadi-eks-vpc.vpc_id
-
-
-  // optional tags
   tags = {
-    Environment = "dev"
-    application = "mahanadi-eks-app"
+    environment = "dev"
+    application = "jan22-eks"
   }
-  
+
+  self_managed_node_group_defaults = {
+    instance_type                          = "t2.micro"
+    update_launch_template_default_version = true
+    iam_role_additional_policies           = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+  }
+
+  self_managed_node_groups = {
+    one = {
+      name = "spot-1"
+
+      public_ip    = true
+      max_size     = 5
+      desired_size = 2
+
+    }
+  }
 
 }

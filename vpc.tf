@@ -1,38 +1,54 @@
 provider "aws" {
-  region = "us-east-2"
+  region = var.region_name
+}
+variable "vpc_cidr_block" {}
+variable "private_subnets" {}
+variable "public_subnets" {}
+variable "region_name" {}
+data "aws_availability_zones" "azs" {
+
 }
 
-module "mahanadi-eks-vpc" {
+module "eks-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.11.3"
+  version = "3.11.4"
   # insert the 23 required variables here
 
-  name = "mahanadi-eks-vpc"
-  cidr = "10.0.0.0/16"
+  name = "jan22-eks-vpc"
+  cidr = var.vpc_cidr_block
   // for EKS we need one public and one private subnet in each AZ
-  azs             = data.aws_availability_zones.azs.names
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs             = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
 
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
+  // through enabled by default, declaring makes it transparent
+  enable_nat_gateway = true
+  // enable single gateway for creating all private subnets to route internet traffic
+  single_nat_gateway = true
+
+  // provides public DNS
   enable_dns_hostnames = true
 
   tags = {
-    Terraform                                    = "true"
-    Environment                                  = "dev"
-    "kubernetes.io/cluster/mahanadi-eks-cluster" = "shared"
+    Terraform   = "true"
+    Environment = "dev"
+    // tag required by cloud controller manager (part of control plane)
+    "kubernetes.io/cluster/jan22-eks-cluster" = "shared"
   }
 
   public_subnet_tags = {
-    "kubernetes.io/role/elb"                     = 1
-    "kubernetes.io/cluster/mahanadi-eks-cluster" = "shared"
+    "kubernetes.io/role/elb" = 1
+    // tag required by cloud controller manager (part of control plane)
+    "kubernetes.io/cluster/jan22-eks-cluster" = "shared"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb"            = 1
-    "kubernetes.io/cluster/mahanadi-eks-cluster" = "shared"
+    // this tag is required by control plane to use clusters for private comm
+    // tag required by cloud controller manager (part of control plane)
+    "kubernetes.io/cluster/jan22-eks-cluster" = "shared"
+    "kubernetes.io/role/internal-elb"         = 1
+
   }
 }
 
-data "aws_availability_zones" "azs" {}
+
