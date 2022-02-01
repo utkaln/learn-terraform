@@ -14,21 +14,31 @@ module "eks" {
     application = "jan22-eks"
   }
 
-  self_managed_node_group_defaults = {
-    instance_type                          = "t2.micro"
-    update_launch_template_default_version = true
-    iam_role_additional_policies           = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
-  }
+  fargate_profiles = {
+    default = {
+      name = "default"
+      selectors = [
+        {
+          namespace = "kube-system"
+          labels = {
+            k8s-app = "kube-dns"
+          }
+        },
+        {
+          namespace = "default"
+        }
+      ]
 
-  self_managed_node_groups = {
-    one = {
-      name = "spot-1"
+      tags = {
+        Owner = "test"
+      }
 
-      public_ip    = true
-      max_size     = 5
-      desired_size = 2
-
+      timeouts = {
+        create = "20m"
+        delete = "20m"
+      }
     }
   }
+
 
 }
