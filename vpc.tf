@@ -29,6 +29,7 @@ module "eks-vpc" {
   // provides public DNS
   enable_dns_hostnames = true
 
+
   tags = {
     Terraform   = "true"
     Environment = "dev"
@@ -51,4 +52,13 @@ module "eks-vpc" {
   }
 }
 
+resource "aws_kms_key" "eks" {
+  description             = "EKS Secret Encryption Key"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
 
+  tags = {
+    environment = "dev"
+    application = "jan22-eks"
+  }
+}
